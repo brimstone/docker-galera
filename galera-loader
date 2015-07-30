@@ -1,0 +1,55 @@
+#!/bin/bash
+set -ueo pipefail
+
+PEERS=${PEERS:-}
+CLUSTERNAME=${CLUSTERNAME:-galera}
+ROOTPASS=${ROOTPASS:-}
+
+run(){
+	tail -F /var/log/mysql/error.log &
+	cd /
+	exec /usr/bin/mysqld_safe
+}
+
+if [ -e /etc/mysql/conf.d/runtime.cnf ]; then
+	# This is our first run.
+	run
+fi
+
+if [ -z "$PEERS" ]; then
+	echo "PEERS undefined, this node is starting in bootstrap mode."
+fi
+
+[ ! -d /var/log/mysql ] && mkdir -pv /var/log/mysql
+chown mysql:mysql -R /var/log/mysql
+
+cat > /etc/mysql/conf.d/runtime.cnf << dog
+[mysqld]
+bind-address=0.0.0.0
+wsrep_cluster_name="${CLUSTERNAME}"
+wsrep_cluster_address=gcomm://$PEERS
+wsrep_provider=/usr/lib/galera/libgalera_smm.so
+dog
+
+if [ -n "$ROOTPASS" ]; then
+	echo "Setting root password"
+	/usr/bin/mysqld_safe
+	until mysql mysql -e "GRANT ALL PRIVILEGES on *.* to root@\"%\" \
+		IDENTIFIED BY '${ROOTPASS}' \
+		WITH \
+		GRANT OPTION MAX_QUERIES_PER_HOUR 0 \
+		MAX_CONNECTIONS_PER_HOUR 0 \
+		MAX_UPDATES_PER_HOUR 0 \
+		MAX_USER_CONNECTIONS 0; \
+		flush privileges;"; do \
+		sleep 2;
+	done
+	killall mysqld_safe mysqld
+	while pgrep mysqld; do
+		sleep 2
+	done
+fi
+
+#garbd --daemon --address gcomm://127.0.0.1:4567 --group "my_wsrep_cluster" -o gmcast.listen_addr tcp://127.0.0.1:4568
+
+run
