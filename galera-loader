@@ -6,9 +6,16 @@ CLUSTERNAME=${CLUSTERNAME:-galera}
 ROOTPASS=${ROOTPASS:-}
 
 run(){
-	tail -F /var/log/mysql/error.log &
-	cd /
-	exec /usr/bin/mysqld_safe
+	exec /usr/sbin/mysqld \
+	--basedir=/usr \
+	--datadir=/var/lib/mysql \
+	--plugin-dir=/usr/lib/mysql/plugin \
+	--user=mysql \
+	--console \
+	--pid-file=/var/run/mysqld/mysqld.pid \
+	--socket=/var/run/mysqld/mysqld.sock \
+	--port=3306 \
+	--wsrep_start_position=00000000-0000-0000-0000-000000000000:-1
 }
 
 if [ -e /etc/mysql/conf.d/runtime.cnf ]; then
@@ -33,8 +40,8 @@ dog
 
 if [ -n "$ROOTPASS" ]; then
 	echo "Setting root password"
-	/usr/bin/mysqld_safe
-	until mysql mysql -e "GRANT ALL PRIVILEGES on *.* to root@\"%\" \
+	run 2>/dev/null >/dev/null &
+	until mysql -e "GRANT ALL PRIVILEGES on *.* to root@\"%\" \
 		IDENTIFIED BY '${ROOTPASS}' \
 		WITH \
 		GRANT OPTION MAX_QUERIES_PER_HOUR 0 \
@@ -42,12 +49,17 @@ if [ -n "$ROOTPASS" ]; then
 		MAX_UPDATES_PER_HOUR 0 \
 		MAX_USER_CONNECTIONS 0; \
 		flush privileges;"; do \
+		printf "."
 		sleep 2;
 	done
-	killall mysqld_safe mysqld
-	while pgrep mysqld; do
+	echo "done"
+	echo "Root password set"
+	killall mysqld
+	while pgrep mysqld >/dev/null; do
+		printf "."
 		sleep 2
 	done
+	echo "done"
 fi
 
 #garbd --daemon --address gcomm://127.0.0.1:4567 --group "my_wsrep_cluster" -o gmcast.listen_addr tcp://127.0.0.1:4568
