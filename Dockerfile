@@ -19,5 +19,6 @@ ADD lowend.cnf /etc/mysql/conf.d/lowend.cnf
 ADD galera-loader /galera-loader
 
 EXPOSE 3306
+EXPOSE 4567
 ENTRYPOINT ["/galera-loader"]
 CMD []
