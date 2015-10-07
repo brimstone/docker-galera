@@ -11,7 +11,8 @@ RUN apt-key add /tmp/GPG-KEY-galeracluster.com \
  && sed -i '/error.log/d' /etc/mysql/my.cnf \
  && rm /var/log/mysql/error.log \
  && echo '!includedir /etc/mysql/ssl.d/' >> /etc/mysql/my.cnf \
- && mkdir /etc/mysql/ssl.d
+ && mkdir /etc/mysql/ssl.d \
+ && rm /var/lib/mysql/ib_logfile*
 
 ADD lowend.cnf /etc/mysql/conf.d/lowend.cnf
 
