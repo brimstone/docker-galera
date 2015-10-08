@@ -3,7 +3,7 @@ set -ueo pipefail
 
 PEERS=${PEERS:-}
 CLUSTERNAME=${CLUSTERNAME:-galera}
-ROOTPASS=${ROOTPASS:-}
+MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-}
 
 run(){
 	exec /usr/sbin/mysqld \
@@ -42,11 +42,11 @@ if [ -n "${BUFFER_POOL_SIZE:-}" ]; then
 	echo "innodb_buffer_pool_size=\"$BUFFER_POOL_SIZE\"" >> /etc/mysql/conf.d/runtime.cnf
 fi
 
-if [ -n "$ROOTPASS" ]; then
+if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
 	echo "Setting root password"
 	run 2>/dev/null >/dev/null &
 	until mysql -e "GRANT ALL PRIVILEGES on *.* to root@\"%\" \
-		IDENTIFIED BY '${ROOTPASS}' \
+		IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' \
 		WITH \
 		GRANT OPTION MAX_QUERIES_PER_HOUR 0 \
 		MAX_CONNECTIONS_PER_HOUR 0 \
