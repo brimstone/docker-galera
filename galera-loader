@@ -38,7 +38,7 @@ wsrep_cluster_address=gcomm://$PEERS
 wsrep_provider=/usr/lib/galera/libgalera_smm.so
 dog
 
-if [ -n "$BUFFER_POOL_SIZE" ]; then
+if [ -n "${BUFFER_POOL_SIZE:-}" ]; then
 	echo "innodb_buffer_pool_size=\"$BUFFER_POOL_SIZE\"" >> /etc/mysql/conf.d/runtime.cnf
 fi
 
