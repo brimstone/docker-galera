@@ -18,6 +18,10 @@ run(){
 	--wsrep_start_position=00000000-0000-0000-0000-000000000000:-1
 }
 
+if [ "${1:-}" = "garbd" ]; then
+	exec garbd --group "${CLUSTERNAME}" "$@"
+fi
+
 if [ -e /etc/mysql/conf.d/runtime.cnf ]; then
 	# This is our first run.
 	run
