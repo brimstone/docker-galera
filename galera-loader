@@ -6,6 +6,7 @@ CLUSTERNAME=${CLUSTERNAME:-galera}
 MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-}
 
 run(){
+	chown -R mysql: /var/lib/mysql
 	exec /usr/sbin/mysqld \
 	--basedir=/usr \
 	--datadir=/var/lib/mysql \
