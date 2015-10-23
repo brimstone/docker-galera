@@ -29,6 +29,7 @@ if [ -e /etc/mysql/conf.d/runtime.cnf ]; then
 fi
 
 if [ -z "$PEERS" ]; then
+	shift
 	echo "PEERS undefined, this node is starting in bootstrap mode."
 fi
 
