@@ -5,7 +5,11 @@ PEERS=${PEERS:-}
 CLUSTERNAME=${CLUSTERNAME:-galera}
 MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-}
 
+log(){
+	echo "$(date +"%F %H:%M:%S") $1"
+}
 run(){
+	backup_wait &
 	chown -R mysql: /var/lib/mysql
 	exec /usr/sbin/mysqld \
 	--basedir=/usr \
@@ -19,6 +23,43 @@ run(){
 	--wsrep_start_position=00000000-0000-0000-0000-000000000000:-1
 }
 
+backup_wait(){
+	mkdir /var/backups/mysql 2>/dev/null || true
+	while true; do
+		sleep ${BACKUP_DELAY:-1h}
+		backup &
+	done
+}
+
+backup(){
+	cd /var/backups/mysql
+	# backup everything to this directory
+	for DB in $(
+	mysql -Ns -e 'show databases' \
+	| grep -vE "^information_schema$|^performance_schema$|^test$"
+	); do
+	/usr/bin/mysqldump --single-transaction --databases "$DB" \
+	> "${DB}.sql"
+	done
+}
+
+restore(){
+	log "0 [Note] Restore: Starting"
+	for f in /var/backups/mysql/*.sql; do
+		log "0 [Note] Restore: Attempting to restore $f"
+		until mysql --connect_timeout=2 < "$f"; do
+			log "0 [Error] Restore: Error importing ${f}. Delaying then trying again."
+			sleep 30
+		done
+		log "0 [Note] Restore: Restored $f"
+		if [ "$f" = "/var/backups/mysql/mysql.sql" ]; then
+			log "0 [Note] Restore: Flushing Privileges"
+			mysql -e "flush privileges;"
+		fi
+	done
+	log "0 [Note] Restore: Done restoring"
+}
+
 if [ "${1:-}" = "garbd" ]; then
 	shift
 	exec garbd --group "${CLUSTERNAME}" "$@"
@@ -30,7 +71,7 @@ if [ -e /etc/mysql/conf.d/runtime.cnf ]; then
 fi
 
 if [ -z "$PEERS" ]; then
-	echo "PEERS undefined, this node is starting in bootstrap mode."
+	log "0 [Warning] WSREP: PEERS undefined, this node is starting in bootstrap mode."
 fi
 
 [ ! -d /var/log/mysql ] && mkdir -pv /var/log/mysql
@@ -49,7 +90,7 @@ if [ -n "${BUFFER_POOL_SIZE:-}" ]; then
 fi
 
 if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
-	echo "Setting root password"
+	log "0 [Warning] Setting root password"
 	run 2>/dev/null >/dev/null &
 	until mysql -e "GRANT ALL PRIVILEGES on *.* to root@\"%\" \
 		IDENTIFIED BY '${MYSQL_ROOT_PASSWORD}' \
@@ -62,14 +103,20 @@ if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
 		printf "."
 		sleep 2;
 	done
-	echo "done"
-	echo "Root password set"
+	log "0 [Note] done setting root password"
+	log "0 [Warning] Killing mysql"
 	killall mysqld
 	while pgrep mysqld >/dev/null; do
 		printf "."
 		sleep 2
 	done
-	echo "done"
+	log "0 [Note] Mysql killed"
+fi
+
+if [ -z "$PEERS" ]; then
+	if [ -f /var/backups/mysql/mysql.sql ]; then
+		restore &
+	fi
 fi
 
 #garbd --daemon --address gcomm://127.0.0.1:4567 --group "my_wsrep_cluster" -o gmcast.listen_addr tcp://127.0.0.1:4568
