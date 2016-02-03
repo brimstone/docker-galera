@@ -1,0 +1,35 @@
+#!/bin/bash
+set -euo pipefail
+source tests/utils
+
+galera mysql-1 -e MYSQL_ROOT_PASSWORD=password
+
+wait_for_synced mysql-1
+
+galera mysql-2 -e PEERS="$(cip mysql-1)"
+
+wait_for_synced mysql-2
+
+version="$(sql mysql-1 -u root -ppassword -e 'SELECT @@VERSION;')"
+
+if [ -z "$version" ]; then
+	echo "Version not found, failing container"
+	exit 1
+fi
+
+version="$(sql mysql-2 -u root -ppassword -e 'SELECT @@VERSION;')"
+
+if [ -z "$version" ]; then
+	echo "Version not found, failing container"
+	exit 1
+fi
+
+cluster_size="$(sql mysql-2 -u root -ppassword -e "show status where Variable_name='wsrep_cluster_size';" | awk '{print $2}')"
+
+if [ "$cluster_size" != "2" ]; then
+	echo "Cluster size is $cluster_size, expected 2"
+	exit 1
+fi
+
+docker rm -vf mysql-1
+docker rm -vf mysql-2

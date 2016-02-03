@@ -1,0 +1,34 @@
+#!/bin/bash
+set -euo pipefail
+source tests/utils
+
+docker rm -vf mysql-1 || true
+docker run -d --name mysql-1 -v $PWD/backups:/var/backups/mysql -e BACKUP_DELAY=10 -e MYSQL_ROOT_PASSWORD=password galera
+
+MYSQL_1_IP="$(docker inspect -f '{{.NetworkSettings.IPAddress}}' mysql-1)"
+
+wait_for_synced mysql-1
+
+version="$(sql mysql-1 -u root -ppassword -e 'SELECT @@VERSION;')"
+
+if [ -z "$version" ]; then
+	echo "Version not found, failing container"
+	exit 1
+fi
+
+echo "Waiting for backup"
+starttime=$(date +%s)
+until [ -f backups/mysql.sql ]; do
+	[ $(date +%s) -gt $[ $starttime + 60 ] ] && break
+	sleep 2
+done
+if [ -f backups/mysql.sql ]; then
+	echo "Found backups"
+	docker run --rm -it -v $PWD:/docker busybox rm -rf /docker/backups
+else
+	echo "No backup found, failing test"
+	exit 1
+fi
+
+
+docker rm -vf mysql-1
