@@ -1,0 +1,77 @@
+TEST=0
+
+trap 'echo "1..$TEST"' EXIT
+
+galera(){
+	name="$1"
+	shift
+	docker rm -vf "$name" &>/dev/null || true
+	docker run -d --name "$name" "$@" "${IMAGE:-galera}"
+}
+
+inctest(){
+	TEST=$[ $TEST + 1 ]
+}
+
+ok(){
+	inctest
+	echo "ok $TEST - $@"
+}
+
+fail(){
+	inctest
+	echo "not ok $TEST - $@"
+}
+
+diag(){
+	if [ -z "${1:-}" ]; then
+		sed 's/^/# /'
+	else
+		echo "# $@"
+	fi
+}
+
+wait_for(){
+	cid="$1"
+	verb="$2"
+	message="$3"
+	diag "Waiting for $cid to become $verb"
+
+	starttime=$(date +%s)
+	while true; do
+		if [ $(docker logs "$cid" 2>&1 | grep -c "Shifting JOINED -> SYNCED") -gt 0 ]; then
+			break
+		fi
+		[ $(date +%s) -gt $[ $starttime + 60 ] ] && break
+		diag "waiting"
+		sleep 2
+	done
+	echo
+	inctest
+	if [ $(date +%s) -lt $[ $starttime + 60 ] ]; then
+		echo "ok $TEST - Container $cid $verb in $[ $(date +%s) - $starttime ] seconds"
+	else
+		echo "not ok $TEST - Container $cid timed out before becoming $verb"
+		docker logs "$cid" 2>&1 | diag
+		return 1
+	fi
+	return 0
+}
+
+wait_for_ready(){
+	wait_for "$1" "available" "ready for connections"
+}
+
+wait_for_synced(){
+	wait_for "$1" "synced" "Shifting JOINED -> SYNCED"
+}
+
+cip(){
+	docker inspect -f '{{.NetworkSettings.IPAddress}}' "$1"
+}
+
+sql(){
+	cid=$1
+	shift
+	mysql -h "$(cip $cid)" -NB "$@" 2> >(sed '/Warning: Using a password/d;s/^/# /' >&2)
+}
