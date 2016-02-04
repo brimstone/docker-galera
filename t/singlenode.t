@@ -2,14 +2,13 @@
 set -euo pipefail
 source t/utils
 
-galera mysql-1 -e MYSQL_ROOT_PASSWORD=password >/dev/null
+mysql1=$(galera -e MYSQL_ROOT_PASSWORD=password)
 
-wait_for_synced mysql-1
+wait_for_synced "$mysql1"
 
-#wait_for_ready mysql-1
 sleep 1
 
-version="$(sql mysql-1 -u root -ppassword -e 'SELECT @@VERSION;' || true)"
+version="$(sql "$mysql1" -u root -ppassword -e 'SELECT @@VERSION;' || true)"
 
 if [ -z "$version" ]; then
 	fail "Version not found, failing container"
@@ -18,5 +17,5 @@ else
 	ok "Version $version"
 fi
 
-docker rm -vf mysql-1 >/dev/null
+docker rm -vf "$mysql1" >/dev/null
 exit 0

@@ -3,10 +3,7 @@ TEST=0
 trap 'echo "1..$TEST"' EXIT
 
 galera(){
-	name="$1"
-	shift
-	docker rm -vf "$name" &>/dev/null || true
-	docker run -d --name "$name" "$@" "${IMAGE:-galera}"
+	docker run -d "$@" "${IMAGE:-galera}"
 }
 
 inctest(){
