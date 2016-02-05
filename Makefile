@@ -1,4 +1,4 @@
-IMAGE ?= brimstone/galera
+export IMAGE ?= brimstone/galera
 
 SHELL=/bin/sh -e
 
