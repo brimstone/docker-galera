@@ -49,7 +49,7 @@ sleep 1
 # wait_for_synced "$mysql2"
 # sleep 1
 
-foo="$(sql "$mysql1" -u root -ppassword data -e 'select value from `table` where `key`="foo"' | awk '{print $2}' || true)"
+foo="$(sql "$mysql1" -u root -ppassword data -e 'select value from `table` where `key`="foo"' || true)"
 if [ "$foo" = "bar" ]; then
 	ok "Found foo = bar"
 else
