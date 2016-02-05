@@ -1,4 +1,4 @@
-IMAGE ?= galera
+IMAGE ?= brimstone/galera
 
 SHELL=/bin/sh -e
 
