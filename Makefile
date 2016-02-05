@@ -1,5 +1,3 @@
-
-
 IMAGE ?= galera
 
 SHELL=/bin/sh -e
@@ -9,15 +7,18 @@ SHELL=/bin/sh -e
 
 all: docker clean
 
-docker: version=$(shell docker run --rm -it --entrypoint=/bin/bash ${IMAGE} -c "dpkg -l | awk '\$$2==\"galera-3\" {g=\$$3} \$$2==\"mysql-wsrep-server-5.6\" {m=\$$3} END {print m \"_\" g }'")_$(shell git describe --always --dirty --tags)
-docker: latest
-	docker tag "${IMAGE}" "${IMAGE}:${version}"
+docker: version=$(shell git describe --always --dirty --tags)
+docker: minorversion=$(shell git describe --always --dirty --tags | sed 's/\.[^.]*$$//')
+docker:
+	docker build -t "${IMAGE}:${version}" .
+	docker tag "${IMAGE}:${version}" "${IMAGE}:${minorversion}"
 
-latest:
-	docker build -t "${IMAGE}" .
+docker-push:
+	@docker login -e="${DOCKER_EMAIL}" -u="${DOCKER_USERNAME}" -p="${DOCKER_PASSWORD}"
+	docker push "${IMAGE}"
 
 clean:
 	docker rmi "${IMAGE}":latest
 
 test:
-	@prove
+	@prove -j9
