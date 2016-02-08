@@ -82,15 +82,13 @@ chown mysql:mysql -R /var/log/mysql
 cat > /etc/mysql/conf.d/runtime.cnf << dog
 [mysqld]
 bind-address=0.0.0.0
+innodb_buffer_pool_size=${BUFFER_POOL_SIZE}
 wsrep_cluster_name="${CLUSTERNAME}"
 wsrep_cluster_address=gcomm://$PEERS
 wsrep_provider=/usr/lib/galera/libgalera_smm.so
 max_connections="${MAX_CONNECTIONS}"
+performance_schema = off
 dog
-
-if [ -n "${BUFFER_POOL_SIZE}" ]; then
-	echo "innodb_buffer_pool_size=\"$BUFFER_POOL_SIZE\"" >> /etc/mysql/conf.d/runtime.cnf
-fi
 
 if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
 	log "0 [Warning] Setting root password"

@@ -9,7 +9,7 @@ EXPOSE 4567
 ENV PEERS ""
 ENV CLUSTERNAME galera
 ENV MYSQL_ROOT_PASSWORD ""
-ENV BUFFER_POOL_SIZE ""
+ENV BUFFER_POOL_SIZE 102m
 ENV MAX_CONNECTIONS 151
 ENV BACKUP_DELAY 1h
 
@@ -27,8 +27,6 @@ RUN apt-key add /tmp/GPG-KEY-galeracluster.com \
  && echo '!includedir /etc/mysql/ssl.d/' >> /etc/mysql/my.cnf \
  && mkdir /etc/mysql/ssl.d \
  && rm /var/lib/mysql/ib_logfile*
-
-ADD lowend.cnf /etc/mysql/conf.d/lowend.cnf
 
 # Copy in our loader
 ADD galera-loader /galera-loader
