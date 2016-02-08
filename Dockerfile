@@ -10,6 +10,7 @@ ENV PEERS ""
 ENV CLUSTERNAME galera
 ENV MYSQL_ROOT_PASSWORD ""
 ENV BUFFER_POOL_SIZE ""
+ENV MAX_CONNECTIONS ""
 
 # downloaded from http://releases.galeracluster.com/GPG-KEY-galeracluster.com
 ADD GPG-KEY-galeracluster.com /tmp/

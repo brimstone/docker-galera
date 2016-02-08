@@ -4,6 +4,7 @@ set -ueo pipefail
 PEERS=${PEERS:-}
 CLUSTERNAME=${CLUSTERNAME:-galera}
 MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-}
+MAX_CONNECTIONS=${MAX_CONNECTIONS:-151}
 
 log(){
 	echo "$(date +"%F %H:%M:%S") $1"
@@ -89,6 +90,7 @@ bind-address=0.0.0.0
 wsrep_cluster_name="${CLUSTERNAME}"
 wsrep_cluster_address=gcomm://$PEERS
 wsrep_provider=/usr/lib/galera/libgalera_smm.so
+max_connections="${MAX_CONNECTIONS}"
 dog
 
 if [ -n "${BUFFER_POOL_SIZE:-}" ]; then
