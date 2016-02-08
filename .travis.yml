@@ -5,4 +5,4 @@ services:
 
 script:
   - make docker test
-  - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || docker-push'
+  - '[ "${TRAVIS_PULL_REQUEST}" != "false" ] || make docker-push'
