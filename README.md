@@ -2,6 +2,7 @@ Galera
 ======
 
 [![Build Status](https://travis-ci.org/brimstone/docker-galera.svg?branch=master)](https://travis-ci.org/brimstone/docker-galera)
+[![](https://badge.imagelayers.io/brimstone/galera:1.0.svg)](https://imagelayers.io/?images=brimstone/galera:1.0 'Get your own badge on imagelayers.io')
 
 This is a container for running a MySQL server with wsrep extensions provided by Galera.
 
