@@ -10,7 +10,8 @@ ENV PEERS ""
 ENV CLUSTERNAME galera
 ENV MYSQL_ROOT_PASSWORD ""
 ENV BUFFER_POOL_SIZE ""
-ENV MAX_CONNECTIONS ""
+ENV MAX_CONNECTIONS 151
+ENV BACKUP_DELAY 1h
 
 # downloaded from http://releases.galeracluster.com/GPG-KEY-galeracluster.com
 ADD GPG-KEY-galeracluster.com /tmp/

@@ -1,11 +1,6 @@
 #!/bin/bash
 set -ueo pipefail
 
-PEERS=${PEERS:-}
-CLUSTERNAME=${CLUSTERNAME:-galera}
-MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-}
-MAX_CONNECTIONS=${MAX_CONNECTIONS:-151}
-
 log(){
 	echo "$(date +"%F %H:%M:%S") $1"
 }
@@ -27,7 +22,7 @@ run(){
 backup_wait(){
 	mkdir /var/backups/mysql 2>/dev/null || true
 	while true; do
-		sleep ${BACKUP_DELAY:-1h}
+		sleep ${BACKUP_DELAY}
 		backup &
 	done
 }
@@ -93,7 +88,7 @@ wsrep_provider=/usr/lib/galera/libgalera_smm.so
 max_connections="${MAX_CONNECTIONS}"
 dog
 
-if [ -n "${BUFFER_POOL_SIZE:-}" ]; then
+if [ -n "${BUFFER_POOL_SIZE}" ]; then
 	echo "innodb_buffer_pool_size=\"$BUFFER_POOL_SIZE\"" >> /etc/mysql/conf.d/runtime.cnf
 fi
 
