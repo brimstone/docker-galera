@@ -1,4 +1,4 @@
-FROM brimstone/debian:wheezy
+FROM brimstone/debian:jessie
 
 CMD []
 ENTRYPOINT ["/galera-loader"]
@@ -18,7 +18,7 @@ ADD GPG-KEY-galeracluster.com /tmp/
 # install galera and everything we need
 # http://galeracluster.com/downloads/
 RUN apt-key add /tmp/GPG-KEY-galeracluster.com \
- && echo "deb http://releases.galeracluster.com/debian wheezy main" \
+ && echo "deb http://releases.galeracluster.com/debian jessie main" \
 	> /etc/apt/sources.list.d/galera.list \
  && package net-tools rsync dnsutils procps \
     mysql-wsrep-server-5.6=5.6.* galera-3=25* galera-arbitrator-3=25* \
