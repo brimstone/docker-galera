@@ -114,15 +114,11 @@ if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
 	log "0 [Note] Mysql killed"
 fi
 
-if [ -z "$PEERS" ]; then
-	if [ -f /var/backups/mysql/mysql.sql ]; then
-		log "0 [Note] Backgrounding restore process"
-		restore &
-	else
-		backup_wait &
-	fi
+if [ -z "$PEERS" -a -f /var/backups/mysql/mysql.sql ]; then
+	log "0 [Note] Backgrounding restore process"
+	restore &
 fi
 
-#garbd --daemon --address gcomm://127.0.0.1:4567 --group "my_wsrep_cluster" -o gmcast.listen_addr tcp://127.0.0.1:4568
+backup_wait &
 
 run
