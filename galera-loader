@@ -28,6 +28,12 @@ backup_wait(){
 }
 
 backup(){
+	BACKUP_LOCK=/var/tmp/backup_lock
+	if [ -f "$BACKUP_LOCK" ]; then
+		log "0 [Warning] Backup: Skipping due to lock file existing"
+		return 1
+	fi
+	touch $BACKUP_LOCK
 	log "0 [Note] Backup: Starting"
 	cd /var/backups/mysql
 	# backup everything to this directory
@@ -41,6 +47,7 @@ backup(){
 	log "0 [Note] Backup: Backing up $DB done"
 	done
 	log "0 [Note] Backup: Done"
+	[ -f "$BACKUP_LOCK" ] && rm -f $BACKUP_LOCK
 }
 
 restore(){
