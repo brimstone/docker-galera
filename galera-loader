@@ -29,6 +29,9 @@ backup_wait(){
 
 backup(){
 	BACKUP_LOCK=/var/tmp/backup_lock
+	if [ -z "$BACKUP_COUNT" ]; then
+		BACKUP_COUNT=0
+	fi
 	if [ -f "$BACKUP_LOCK" ]; then
 		log "0 [Warning] Backup: Skipping due to lock file existing"
 		return 1
@@ -40,6 +43,19 @@ backup(){
 	for DB in $( mysql -Ns -e 'show databases' \
 				| grep -vE "^information_schema$|^performance_schema$|^test$"
 				); do
+		if [ "$BACKUP_COUNT" != "0" ]; then
+			for count_up in $(seq 1 $BACKUP_COUNT); do
+				let count_down=$BACKUP_COUNT-$count_up+1
+				let count_previous=$count_down-1
+				if [ $count_down = 0 ]; then
+					[ -f ${DB}.sql ] && mv ${DB}.sql \
+								${DB}.sql.${count_down}
+				else
+					[ -f ${DB}.sql.${count_previous} ] && mv ${DB}.sql.${count_previous} \
+										${DB}.sql.${count_down}
+				fi
+			done
+		fi
 		log "0 [Note] Backup: Backing up $DB"
 		/usr/bin/mysqldump --single-transaction --databases "$DB" > "${DB}.sql"
 		log "0 [Note] Backup: Backing up $DB done"
