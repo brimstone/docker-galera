@@ -37,14 +37,12 @@ backup(){
 	log "0 [Note] Backup: Starting"
 	cd /var/backups/mysql
 	# backup everything to this directory
-	for DB in $(
-	mysql -Ns -e 'show databases' \
-	| grep -vE "^information_schema$|^performance_schema$|^test$"
-	); do
-	log "0 [Note] Backup: Backing up $DB"
-	/usr/bin/mysqldump --single-transaction --databases "$DB" \
-	> "${DB}.sql"
-	log "0 [Note] Backup: Backing up $DB done"
+	for DB in $( mysql -Ns -e 'show databases' \
+				| grep -vE "^information_schema$|^performance_schema$|^test$"
+				); do
+		log "0 [Note] Backup: Backing up $DB"
+		/usr/bin/mysqldump --single-transaction --databases "$DB" > "${DB}.sql"
+		log "0 [Note] Backup: Backing up $DB done"
 	done
 	log "0 [Note] Backup: Done"
 	[ -f "$BACKUP_LOCK" ] && rm -f $BACKUP_LOCK
