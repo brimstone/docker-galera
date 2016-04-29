@@ -20,6 +20,8 @@ run(){
 }
 
 backup_wait(){
+	# If the user doesn't want backups, don't even try to make any
+	[ "$BACKUP_COUNT" -gt 0 ] || return
 	mkdir /var/backups/mysql 2>/dev/null || true
 	while true; do
 		sleep ${BACKUP_DELAY}
@@ -29,9 +31,6 @@ backup_wait(){
 
 backup(){
 	BACKUP_LOCK=/var/tmp/backup_lock
-	if [ -z "$BACKUP_COUNT" ]; then
-		BACKUP_COUNT=0
-	fi
 	if [ -f "$BACKUP_LOCK" ]; then
 		log "0 [Warning] Backup: Skipping due to lock file existing"
 		return 1
@@ -43,19 +42,15 @@ backup(){
 	for DB in $( mysql -Ns -e 'show databases' \
 				| grep -vE "^information_schema$|^performance_schema$|^test$"
 				); do
-		if [ "$BACKUP_COUNT" != "0" ]; then
-			for count_up in $(seq 1 $BACKUP_COUNT); do
-				let count_down=$BACKUP_COUNT-$count_up+1
-				let count_previous=$count_down-1
-				if [ $count_down = 0 ]; then
-					[ -f ${DB}.sql ] && mv ${DB}.sql \
-								${DB}.sql.${count_down}
-				else
-					[ -f ${DB}.sql.${count_previous} ] && mv ${DB}.sql.${count_previous} \
-										${DB}.sql.${count_down}
-				fi
-			done
-		fi
+		for count_down in $(seq $(( BACKUP_COUNT - 1 )) 1 -1); do
+			if [ $count_down = 0 ]; then
+				[ -f ${DB}.sql ] && mv ${DB}.sql \
+							${DB}.sql.$(( count_down + 1 ))
+			else
+				[ -f ${DB}.sql.${count_down} ] && mv ${DB}.sql.${count_down} \
+									${DB}.sql.$(( count_down + 1))
+			fi
+		done
 		log "0 [Note] Backup: Backing up $DB"
 		/usr/bin/mysqldump --single-transaction --databases "$DB" > "${DB}.sql"
 		log "0 [Note] Backup: Backing up $DB done"
