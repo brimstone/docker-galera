@@ -7,6 +7,7 @@ backupdir="$(mktemp -d)"
 diag "First node to build sql files and permissions"
 
 mysql0=$(galera -e MYSQL_ROOT_PASSWORD=password -v "$backupdir:/var/backups/mysql" -e BACKUP_DELAY=10)
+cleanupid "$mysql0"
 wait_for_synced "$mysql0"
 sleep 1
 
@@ -41,13 +42,10 @@ diag "End of life for first node"
 diag "Creating node 1"
 
 mysql1=$(galera -v "$backupdir:/var/backups/mysql" -e BACKUP_DELAY=10)
+cleanupid "$mysql1"
 wait_for_synced "$mysql1"
 wait_for "$mysql1" "restored" "Done restoring"
 sleep 1
-
-# mysql2=$(galera -e PEERS="$(cip "$mysql1")")
-# wait_for_synced "$mysql2"
-# sleep 1
 
 foo="$(sql "$mysql1" -u root -ppassword data -e 'select value from `table` where `key`="foo"' || true)"
 if [ "$foo" = "bar" ]; then
@@ -60,6 +58,4 @@ fi
 diag "Clean up"
 
 docker run --rm -it -v "$(dirname "$backupdir"):/docker" busybox rm -rf "/docker/$(basename "$backupdir")" >/dev/null 2>/dev/null
-docker rm -vf "$mysql1" >/dev/null
-#docker rm -vf "$mysql2" >/dev/null
 exit 0

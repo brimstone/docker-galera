@@ -3,6 +3,7 @@ set -euo pipefail
 source t/utils
 
 mysql1=$(galera -e MYSQL_ROOT_PASSWORD=password)
+cleanupid "$mysql1"
 
 wait_for_synced "$mysql1"
 
@@ -17,5 +18,4 @@ else
 	ok "Version $version"
 fi
 
-docker rm -vf "$mysql1" >/dev/null
 exit 0

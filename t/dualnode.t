@@ -3,10 +3,12 @@ set -euo pipefail
 source t/utils
 
 mysql1=$(galera -e MYSQL_ROOT_PASSWORD=password)
+cleanupid "$mysql1"
 
 wait_for_synced "$mysql1"
 
 mysql2=$(galera -e PEERS="$(cip "$mysql1")")
+cleanupid "$mysql2"
 
 wait_for_synced "$mysql2"
 
@@ -32,8 +34,5 @@ if [ "$cluster_size" != "2" ]; then
 	echo "Cluster size is $cluster_size, expected 2"
 	exit 1
 fi
-
-docker rm -vf "$mysql1" >/dev/null
-docker rm -vf "$mysql2" >/dev/null
 
 exit 0

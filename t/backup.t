@@ -4,6 +4,7 @@ source t/utils
 
 backupdir="$(mktemp -d)"
 mysql1=$(galera -e MYSQL_ROOT_PASSWORD=password -v "$backupdir:/var/backups/mysql" -e BACKUP_DELAY=10)
+cleanupid "$mysql1"
 
 wait_for_synced "$mysql1"
 
@@ -34,6 +35,5 @@ else
 fi
 
 
-docker rm -vf "$mysql1" >/dev/null
 rm -rf "$backupdir"
 exit 0
