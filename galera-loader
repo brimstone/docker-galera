@@ -37,6 +37,7 @@ backup(){
 	fi
 	touch $BACKUP_LOCK
 	log "0 [Note] Backup: Starting"
+	chown -R mysql: /var/backups/mysql
 	cd /var/backups/mysql
 	# backup everything to this directory
 	for DB in $( mysql -Ns -e 'show databases' \
