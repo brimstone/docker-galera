@@ -6,13 +6,13 @@ ENTRYPOINT ["/galera-loader"]
 EXPOSE 3306
 EXPOSE 4567
 
-ENV PEERS ""
-ENV CLUSTERNAME galera
-ENV MYSQL_ROOT_PASSWORD ""
-ENV BUFFER_POOL_SIZE 102m
-ENV MAX_CONNECTIONS 151
-ENV BACKUP_DELAY 1h
-ENV BACKUP_COUNT 5
+ENV PEERS="" \
+    CLUSTERNAME=galera \
+    MYSQL_ROOT_PASSWORD="" \
+    BUFFER_POOL_SIZE=102m \
+    MAX_CONNECTIONS=151 \
+    BACKUP_DELAY=1h \
+    BACKUP_COUNT=5
 
 # downloaded from http://releases.galeracluster.com/GPG-KEY-galeracluster.com
 ADD GPG-KEY-galeracluster.com /tmp/
