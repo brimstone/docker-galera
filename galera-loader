@@ -45,11 +45,10 @@ backup(){
 				); do
 		for count_down in $(seq $(( BACKUP_COUNT - 1 )) 1 -1); do
 			if [ $count_down = 0 ]; then
-				[ -f ${DB}.sql ] && mv ${DB}.sql \
-							${DB}.sql.$(( count_down + 1 ))
+				[ -f ${DB}.sql ] && mv ${DB}.sql ${DB}.sql.$(( count_down + 1 ))
 			else
-				[ -f ${DB}.sql.${count_down} ] && mv ${DB}.sql.${count_down} \
-									${DB}.sql.$(( count_down + 1))
+				[ -f ${DB}.sql.${count_down} ] && gzip -c ${DB}.sql.${count_down} > ${DB}.sql.gz.${count_down} && rm -f ${DB}.sql.${count_down}
+				[ -f ${DB}.sql.gz.${count_down} ] && mv ${DB}.sql.gz.${count_down} ${DB}.sql.gz.$(( count_down + 1))
 			fi
 		done
 		log "0 [Note] Backup: Backing up $DB"
