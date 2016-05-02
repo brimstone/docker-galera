@@ -12,6 +12,7 @@ ENV MYSQL_ROOT_PASSWORD ""
 ENV BUFFER_POOL_SIZE 102m
 ENV MAX_CONNECTIONS 151
 ENV BACKUP_DELAY 1h
+ENV BACKUP_COUNT 5
 
 # downloaded from http://releases.galeracluster.com/GPG-KEY-galeracluster.com
 ADD GPG-KEY-galeracluster.com /tmp/
