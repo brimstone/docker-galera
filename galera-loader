@@ -47,7 +47,7 @@ backup(){
 			if [ $count_down = 0 ]; then
 				[ -f ${DB}.sql ] && mv ${DB}.sql ${DB}.sql.$(( count_down + 1 ))
 			else
-				[ -f ${DB}.sql.${count_down} ] && gzip -c ${DB}.sql.${count_down} > ${DB}.sql.gz.${count_down} && rm -f ${DB}.sql.${count_down}
+				[ -f ${DB}.sql.${count_down} ] && ionice gzip -c ${DB}.sql.${count_down} > ${DB}.sql.gz.${count_down} && rm -f ${DB}.sql.${count_down}
 				[ -f ${DB}.sql.gz.${count_down} ] && mv ${DB}.sql.gz.${count_down} ${DB}.sql.gz.$(( count_down + 1))
 			fi
 		done
