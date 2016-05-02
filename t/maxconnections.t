@@ -5,6 +5,7 @@ source t/utils
 backupdir="$(mktemp -d)"
 MAX=$RANDOM
 mysql1=$(galera -e MAX_CONNECTIONS="$MAX" -e MYSQL_ROOT_PASSWORD=password -v "$backupdir:/var/backups/mysql" -e BACKUP_DELAY=10)
+cleanupid "$mysql1"
 
 wait_for_synced "$mysql1"
 
@@ -19,5 +20,4 @@ else
 	exit 1
 fi
 
-docker rm -vf "$mysql1" >/dev/null
 exit 0

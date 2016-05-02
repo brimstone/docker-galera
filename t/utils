@@ -1,9 +1,18 @@
 TEST=0
+cids=( )
 
-trap 'echo "1..$TEST"' EXIT
+docleanup(){
+	echo "1..$TEST"
+	docker rm -vf "${cids[@]}" >/dev/null || true
+}
+trap docleanup EXIT
 
 galera(){
 	docker run -d "$@" "${IMAGE:-galera}"
+}
+
+cleanupid(){
+	cids[${#cids[@]}]="$1"
 }
 
 inctest(){
