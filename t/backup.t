@@ -24,6 +24,8 @@ echo "Waiting for backup"
 starttime=$(date +%s)
 until [ -f "$backupdir/mysql.sql" ]; do
 	[ $(date +%s) -gt $[ $starttime + 60 ] ] && break
+	echo "# ls of backupdir:"
+	ls $backupdir
 	echo "# waiting"
 	sleep 2
 done
@@ -33,6 +35,8 @@ if [ -f "$backupdir/mysql.sql" ]; then
 else
 	docker logs "$mysql1"
 	fail "No backup found, failing test"
+	echo "ls of backupdir:"
+	ls -la $backupdir
 	exit 1
 fi
 
