@@ -54,8 +54,8 @@ backup(){
 	for DB in $( mysql -Ns -e 'show databases' \
 				| grep -vE "^information_schema$|^performance_schema$|^test$"
 				); do
-		log "0 Contents of /var/backups/mysql before rotation of backups of $DB:"
-		log "0 $(ls -a /var/backups/mysql)"
+		# log "0 Contents of /var/backups/mysql before rotation of backups of $DB:"
+		# log "0 $(ls -a /var/backups/mysql)"
 		let c=$BACKUP_COUNT-1
 		for (( count_down = $c ; count_down >= 0; count_down-- )); do
 			if [[ $count_down = 0 ]]; then
@@ -65,12 +65,12 @@ backup(){
 				[ -f ${DB}.sql.gz.${count_down} ] && mv ${DB}.sql.gz.${count_down} ${DB}.sql.gz.$(( count_down + 1))
 			fi
 		done
-		log "0 Contents of /var/backups/mysql after rotation of backups of $DB:"
-		log "0 $(ls -a /var/backups/mysql)"
+		# log "0 Contents of /var/backups/mysql after rotation of backups of $DB:"
+		# log "0 $(ls -a /var/backups/mysql)"
 		log "0 [Note] Backup: Backing up $DB"
 		/usr/bin/mysqldump --single-transaction --databases "$DB" > "${DB}.sql"
-		log "0 Contents of /var/backups/mysql after backup of $DB:"
-		log "0 $(ls -a /var/backups/mysql)"
+		# log "0 Contents of /var/backups/mysql after backup of $DB:"
+		# log "0 $(ls -a /var/backups/mysql)"
 		log "0 [Note] Backup: Backing up $DB done"
 	done
 	log "0 [Note] Backup: Done"
