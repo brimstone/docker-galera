@@ -53,7 +53,7 @@ backup(){
 				| grep -vE "^information_schema$|^performance_schema$|^test$"
 				); do
 		let c=$BACKUP_COUNT-1
-		for (( count_down = $c ; $count_down >= 0; $count_down-- )); do
+		for (( count_down = $c ; count_down >= 0; count_down-- )); do
 			if [[ $count_down = 0 ]]; then
 				[ -f ${DB}.sql ] && mv ${DB}.sql ${DB}.sql.$(( count_down + 1 ))
 			else
