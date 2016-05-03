@@ -3,6 +3,7 @@ set -euo pipefail
 source t/utils
 
 backupdir="$(mktemp -d)"
+chmod 755 $backupdir
 MAX=$RANDOM
 mysql1=$(galera -e MAX_CONNECTIONS="$MAX" -e MYSQL_ROOT_PASSWORD=password -v "$backupdir:/var/backups/mysql" -e BACKUP_DELAY=10)
 cleanupid "$mysql1"

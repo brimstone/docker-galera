@@ -3,6 +3,7 @@ set -euo pipefail
 source t/utils
 
 backupdir="$(mktemp -d)"
+chmod 755 $backupdir
 
 diag "First node to build sql files and permissions"
 

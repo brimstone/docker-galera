@@ -30,6 +30,17 @@ backup_wait(){
 }
 
 backup(){
+	shopt -s extglob
+	if [[ -z $BACKUP_COUNT ]]; then
+		log "0 BACKUP_COUNT is unset, skipping backup"
+		return
+	elif [[ "$BACKUP_COUNT" == "0" ]]; then
+		log "0 BACKUP_COUNT is zero, skipping backup"
+		return
+	elif [[ $BACKUP_COUNT != +([0-9]) ]]; then
+		log "0 BACKUP_COUNT does not match a positive number.  Value is $BACKUP_COUNT"
+		return
+	fi
 	BACKUP_LOCK=/var/tmp/backup_lock
 	if [ -f "$BACKUP_LOCK" ]; then
 		log "0 [Warning] Backup: Skipping due to lock file existing"
@@ -37,18 +48,19 @@ backup(){
 	fi
 	touch $BACKUP_LOCK
 	log "0 [Note] Backup: Starting"
+	chown -R mysql: /var/backups/mysql
 	cd /var/backups/mysql
 	# backup everything to this directory
 	for DB in $( mysql -Ns -e 'show databases' \
 				| grep -vE "^information_schema$|^performance_schema$|^test$"
 				); do
-		for count_down in $(seq $(( BACKUP_COUNT - 1 )) 1 -1); do
-			if [ $count_down = 0 ]; then
-				[ -f ${DB}.sql ] && mv ${DB}.sql \
-							${DB}.sql.$(( count_down + 1 ))
+		let c=$BACKUP_COUNT-1
+		for (( count_down = $c ; count_down >= 0; count_down-- )); do
+			if [[ $count_down = 0 ]]; then
+				[ -f ${DB}.sql ] && mv ${DB}.sql ${DB}.sql.$(( count_down + 1 ))
 			else
-				[ -f ${DB}.sql.${count_down} ] && mv ${DB}.sql.${count_down} \
-									${DB}.sql.$(( count_down + 1))
+				[ -f ${DB}.sql.${count_down} ] && ionice -c 3 gzip -c ${DB}.sql.${count_down} > ${DB}.sql.gz.${count_down} && rm -f ${DB}.sql.${count_down}
+				[ -f ${DB}.sql.gz.${count_down} ] && mv ${DB}.sql.gz.${count_down} ${DB}.sql.gz.$(( count_down + 1))
 			fi
 		done
 		log "0 [Note] Backup: Backing up $DB"
