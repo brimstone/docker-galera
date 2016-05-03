@@ -27,6 +27,7 @@ done
 if [ -f "$backupdir/mysql.sql" ]; then
 	ok "Found backups"
 else
+	docker logs "$mysql0"
 	fail "No backup found, failing test"
 	exit 1
 fi

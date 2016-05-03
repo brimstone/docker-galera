@@ -23,4 +23,4 @@ clean:
 	docker rmi "${IMAGE}":latest
 
 test:
-	@prove -j9
+	@prove -v --state=save,failed
