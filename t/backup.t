@@ -3,6 +3,7 @@ set -euo pipefail
 source t/utils
 
 backupdir="$(mktemp -d)"
+chmod 755 $backupdir
 mysql1=$(galera -e MYSQL_ROOT_PASSWORD=password -v "$backupdir:/var/backups/mysql" -e BACKUP_DELAY=10 -e BACKUP_COUNT=3)
 cleanupid "$mysql1"
 
