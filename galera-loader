@@ -4,6 +4,7 @@ set -ueo pipefail
 log(){
 	echo "$(date +"%F %H:%M:%S") $1"
 }
+
 run(){
 	chown -R mysql: /var/lib/mysql
 	exec /usr/sbin/mysqld \
@@ -96,7 +97,7 @@ if [ "${1:-}" = "garbd" ]; then
 fi
 
 if [ -e /etc/mysql/conf.d/runtime.cnf ]; then
-	# This is our first run.
+	# This is not our first run.
 	run
 fi
 
@@ -116,6 +117,22 @@ wsrep_cluster_address=gcomm://$PEERS
 wsrep_provider=/usr/lib/galera/libgalera_smm.so
 max_connections="${MAX_CONNECTIONS}"
 performance_schema = off
+
+# INNODB #
+innodb-flush-method            = O_DIRECT
+innodb-log-files-in-group      = 2
+innodb-log-file-size           = 512M
+innodb-flush-log-at-trx-commit = 2
+
+# CACHES AND LIMITS #
+tmp-table-size                 = 32M
+max-heap-table-size            = 32M
+query-cache-type               = 0
+query-cache-size               = 0
+thread-cache-size              = 100
+open-files-limit               = 65535
+table-definition-cache         = 1024
+table-open-cache               = 2048
 dog
 
 if [ -n "$MYSQL_ROOT_PASSWORD" ]; then
